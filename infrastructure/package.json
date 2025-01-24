@@ -10,4 +10,8 @@
         "@pulumi/docker": "^4.6.1",
         "@pulumi/pulumi": "^3.113.0"
     }
-}
+    
+  }
+
+    
+
