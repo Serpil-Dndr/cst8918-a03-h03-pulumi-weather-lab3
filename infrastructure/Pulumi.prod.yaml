@@ -8,6 +8,6 @@ config:
   cst8918-a03-infra:prefixName: 'cst8918a03wats0358'
   cst8918-a03-infra:imageTag: 'v0.2.0'
   cst8918-a03-infra:acrUsername: cst8918a03wats0358ACR2625c8b2
-  cst8918-a03-infra:acrPassword:
+  cst8918-a03-infra:acrPassword: 
     secure: AAABAJ0JWGDqcFdQcmOFytQM9YKr/8W0xDhe2nHWZF4IRKPmQcLpy5JgbJiTne9uZZ1BsRfCUW1dPdzcEqug2Ynun+kGGp5fgsP2V332Umzm1Itr
   cst8918-a03-infra:acrServer: cst8918a03wats0358acr2625c8b2.azurecr.io
