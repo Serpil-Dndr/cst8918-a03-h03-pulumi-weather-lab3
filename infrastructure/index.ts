@@ -3,7 +3,7 @@ import * as resources from '@pulumi/azure-native/resources'
 import * as containerregistry from '@pulumi/azure-native/containerregistry'
 import * as docker from '@pulumi/docker';
 import * as containerinstance from '@pulumi/azure-native/containerinstance'
-
+import * as cache from '@pulumi/azure-native/cache';
 
 // Import the configuration settings for the current stack.
 const config = new pulumi.Config()
@@ -20,6 +20,22 @@ const memory = config.requireNumber('memory')
 
 // Create a resource group.
 const resourceGroup = new resources.ResourceGroup(`${prefixName}-rg`)
+const redis = new cache.Redis(`${prefixName}-redis`, {
+  name: `${prefixName}-weather-cache`,
+  location: 'westus3',
+  resourceGroupName: resourceGroup.name,
+  enableNonSslPort: true,
+  redisVersion: 'Latest',
+  minimumTlsVersion: '1.2',
+  redisConfiguration: {
+    maxmemoryPolicy: 'allkeys-lru',
+  },
+  sku: {
+    name: 'Basic',
+    family: 'C',
+    capacity: 0,
+  },
+});
 
 // Create the container registry.
 const registry = new containerregistry.Registry(`${prefixName}ACR`, {
