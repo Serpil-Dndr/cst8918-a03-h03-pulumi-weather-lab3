@@ -5,6 +5,7 @@ import * as docker from '@pulumi/docker';
 import * as containerinstance from '@pulumi/azure-native/containerinstance'
 import * as cache from '@pulumi/azure-native/cache';
 
+
 // Import the configuration settings for the current stack.
 const config = new pulumi.Config()
 const appPath = config.require('appPath')
@@ -20,6 +21,7 @@ const memory = config.requireNumber('memory')
 
 // Create a resource group.
 const resourceGroup = new resources.ResourceGroup(`${prefixName}-rg`)
+// Create a managed Redis service
 const redis = new cache.Redis(`${prefixName}-redis`, {
   name: `${prefixName}-weather-cache`,
   location: 'westus3',
@@ -35,7 +37,14 @@ const redis = new cache.Redis(`${prefixName}-redis`, {
     family: 'C',
     capacity: 0,
   },
-});
+})
+// Extract the auth creds from the deployed Redis service
+const redisAccessKey = cache
+  .listRedisKeysOutput({ name: redis.name, resourceGroupName: resourceGroup.name })
+  .apply(keys => keys.primaryKey)
+// Construct the Redis connection string to be passed as an environment variable in the app container
+const redisConnectionString = pulumi.interpolate`rediss://:${redisAccessKey}@${redis.hostName}:${redis.sslPort}`
+
 
 // Create the container registry.
 const registry = new containerregistry.Registry(`${prefixName}ACR`, {
@@ -101,9 +110,16 @@ const containerGroup = new containerinstance.ContainerGroup(
             name: 'PORT',
             value: containerPort.toString(),
           },
+          // existing vars ...
+        {
+           name: 'REDIS_URL',
+             value: redisConnectionString
+           },
           {
-            name: 'WEATHER_API_KEY',
-            value: 'cf2939dd70ebb21d7ffd067233f2ebc2',
+            
+              name: 'WEATHER_API_KEY',
+              value: config.requireSecret('weatherApiKey')
+            
           },
         ],
         resources: {
@@ -126,6 +142,7 @@ const containerGroup = new containerinstance.ContainerGroup(
     },
   },
 )
+
 // Export the service's IP address, hostname, and fully-qualified URL.
 export const hostname = containerGroup.ipAddress.apply((addr) => addr!.fqdn!)
 export const ip = containerGroup.ipAddress.apply((addr) => addr!.ip!)

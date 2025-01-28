@@ -9,5 +9,10 @@
         "@pulumi/docker": "^4.5.1",
         "@pulumi/pulumi": "^3.0.0",
         "redis": "^4.7.0"
+    },
+    "scripts": {
+        "dev": "pulumi up",
+        "destroy": "pulumi destroy",
+        "preview": "pulumi preview"
     }
 }
